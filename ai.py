@@ -14,6 +14,8 @@ def expectimax(node, depth):
         for move in moveset:
             child = deepcopy(node)
             child.move_board(move)
+            if np.array_equal(node.get_board(), child.get_board()):
+                continue
             alpha = max(alpha, expectimax(child, depth - 1))
     elif depth % 2 == 0:
             board = node.get_board()
@@ -49,25 +51,26 @@ def heuristic(node):
     val = 0.0
     for i in range(3):
         for j in range(3):
-            if board[i][j] > board[i][j+1]:
+            if board[i][j] >= board[i][j+1]:
                 val += board[i][j]
             else:
                 val -= abs(board[i][j] - board[i][j+1])
 
-            if board[i][j] > board[i+1][j]:
+            if board[i][j] >= board[i+1][j]:
                 val += board[i][j]
             else:
                 val -= abs(board[i][j] - board[i+1][j])
 
-    sub = 1.1
+    sub = 1.0
+    #.6, .5, .1, .01
     if empty == 3:
-        sub = .6
+        sub = .9
     elif empty == 2:
-        sub = .5
+        sub = .8
     elif empty == 1:
-        sub = .1
+        sub = .7
     elif empty == 0:
-        sub = .01
+        sub = .6
     return val * sub
 
 board = board.Board()
@@ -86,9 +89,8 @@ while True:
             print("continuing...")
             continue
         alpha = expectimax(test, 4)
-        if time.time() - t < .1:
-            print ("Going into turbo!!!")
-            alpha = expectimax(test, 8)
+        if time.time() - t < .05:
+            alpha = expectimax(test, 6)
         if alpha > best_alpha:
             best_alpha = alpha
             best_move = move
