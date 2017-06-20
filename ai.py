@@ -1,7 +1,8 @@
 from copy import deepcopy
+import time
 import board as board
 import numpy as np
-import time
+
 
 def expectimax(node, depth):
     alpha = None
@@ -18,33 +19,34 @@ def expectimax(node, depth):
                 continue
             alpha = max(alpha, expectimax(child, depth - 1))
     elif depth % 2 == 0:
-            board = node.get_board()
-            children = []
-            for x in range(4):
-                for y in range(4):
-                    if board[x][y] == 0:
-                        children.append((x,y))
-            alpha = 0.0
-            if len(children) == 0:
-                alpha = expectimax(node, depth - 1)
-            else:
-                prob_of_2 = .9 / len(children)
-                prob_of_4 = .1 / len(children)
-                for pos in children:
-                    child = deepcopy(node)
-                    board = child.get_board()
-                    board[pos[0]][pos[1]] = 2
-                    child.set_board(board)
-                    alpha += prob_of_2 * expectimax(child, depth - 1)
-                    board[pos[0]][pos[1]] = 4
-                    child.set_board(board)
-                    alpha += prob_of_4 * expectimax(child, depth - 1)
+        board = node.get_board()
+        children = []
+        for x in range(4):
+            for y in range(4):
+                if board[x][y] == 0:
+                    children.append((x, y))
+        alpha = 0.0
+        if len(children) == 0:
+            alpha = expectimax(node, depth - 1)
+        else:
+            prob_of_2 = .9 / len(children)
+            prob_of_4 = .1 / len(children)
+            for pos in children:
+                child = deepcopy(node)
+                board = child.get_board()
+                board[pos[0]][pos[1]] = 2
+                child.set_board(board)
+                alpha += prob_of_2 * expectimax(child, depth - 1)
+                board[pos[0]][pos[1]] = 4
+                child.set_board(board)
+                alpha += prob_of_4 * expectimax(child, depth - 1)
 
     return alpha
 
+
 def heuristic(node):
     if node.check_board():
-        return -10000000000.0
+        return -100.0
 
     empty = float(node.get_empty())
     board = node.get_board()
@@ -61,8 +63,13 @@ def heuristic(node):
             else:
                 val -= abs(board[i][j] - board[i+1][j])
 
+            if board[i][j] == board[i][j+1]:
+                val += 2*board[i][j]
+            if board[i][j] == board[i+1][j]:
+                val += 2*board[i][j]
+
     sub = 1.0
-    #.6, .5, .1, .01
+    # .9,.7,.5,.3
     if empty == 3:
         sub = .9
     elif empty == 2:
@@ -72,6 +79,7 @@ def heuristic(node):
     elif empty == 0:
         sub = .6
     return val * sub
+
 
 board = board.Board()
 board.print_board()
